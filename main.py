@@ -18,16 +18,25 @@ while True:
         path_obj = input("Insert the path to the file: ")
         file_path = Path(path_obj)
 
-    #Print all files in current directory
+    #Print all files in current directory and re-prompt if it's a directory
     if file_path.is_dir():
-        for item in file_path.iterdir():
-            print(item.name)
+        items = list(file_path.iterdir())
+        if not items:
+            print("This folder is empty.")
+        else:
+            for item in items:
+                print(item.name)
+        print("Please enter a path to a specific file, not just a directory.")
+        continue
 
-    #Get MIME type (file format)
-    mime_type = magic.from_file(file_path, mime=True)
-
-    #Get human-readable file description
-    description = magic.from_file(file_path)
+    #Get MIME type (file format) for a file path
+    try:
+        mime_type = magic.from_file(str(file_path), mime=True)
+        #Get human-readable file description
+        description = magic.from_file(str(file_path))
+    except Exception as e:
+        print(f"Could not analyze file {file_path}: {e}")
+        continue
 
     #Print MIME type and description
     print(f"The file {file_path} has MIME type: {mime_type}")
