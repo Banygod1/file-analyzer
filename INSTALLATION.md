@@ -4,7 +4,7 @@
 
 ```bash
 git clone https://github.com/Banygod1/file-analyzer.git
-cd File_Analyzer
+cd file-analyzer
 ```
 
 ### 2. Create and activate a virtual environment
