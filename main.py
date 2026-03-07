@@ -28,30 +28,38 @@ def analyze_file(file_path: Path) -> bool:
     return True
 
 
+def _normalize_path_str(s: str) -> str:
+    """Turn 'D:' into 'D:\\' so it refers to drive root."""
+    s = s.strip()
+    if len(s) == 2 and s[1] == ":" and s[0].isalpha():
+        s += "\\"
+    return s
+
+
 def main():
     parser = argparse.ArgumentParser(description="Analyze a file and show its MIME type and description.")
-    parser.add_argument("path", nargs="?", help="Path to the file to analyze (optional; if omitted, runs interactively)")
+    parser.add_argument("paths", nargs="*", help="One or more file paths to analyze (optional; if omitted, runs interactively)")
     args = parser.parse_args()
 
-    # If a path was given as an argument on the command line, analyze it and exit
-    if args.path is not None:
-        path_str = args.path.strip()
-        if len(path_str) == 2 and path_str[1] == ":" and path_str[0].isalpha():
-            path_str += "\\"
-        file_path = Path(path_str)
-        if not file_path.exists():
-            print(f"This path does not exist: {file_path}")
-            return
-        if file_path.is_dir():
-            items = list(file_path.iterdir())
-            if not items:
-                print("This folder is empty.")
-            else:
-                for item in items:
-                    print(item.name)
-            print("Please pass a path to a specific file, not a directory.")
-            return
-        analyze_file(file_path)
+    # If paths were given on the command line, analyze each and exit
+    if args.paths:
+        for path_str in args.paths:
+            path_str = _normalize_path_str(path_str)
+            file_path = Path(path_str)
+            if not file_path.exists():
+                print(f"This path does not exist: {file_path}")
+                continue
+            if file_path.is_dir():
+                items = list(file_path.iterdir())
+                if not items:
+                    print("This folder is empty.")
+                else:
+                    for item in items:
+                        print(item.name)
+                print("Please pass a path to a specific file, not a directory.")
+                continue
+            analyze_file(file_path)
+            print()
         print("Thank you for using the file analyzer!")
         return
 
@@ -60,21 +68,13 @@ def main():
     while True:
         print(f"Current directory: {file_path}")
 
-        path_obj = input("Insert the path to the file: ")
-        path_str = path_obj.strip()
-
-        #If file path starts with something like C: or D:, let the command line interpret it as a Drive.
-        if len(path_str) == 2 and path_str[1] == ":" and path_str[0].isalpha():
-            path_str += "\\"
+        path_str = _normalize_path_str(input("Insert the path to the file: "))
         file_path = Path(path_str)
 
-        #Reprompt for file path if given path doesn`t exist
+        #Reprompt for file path if given path doesn't exist
         while not file_path.exists():
             print("This path does not exist. Please insert a valid file path.")
-            path_obj = input("Insert the path to the file: ")
-            path_str = path_obj.strip()
-            if len(path_str) == 2 and path_str[1] == ":" and path_str[0].isalpha():
-                path_str += "\\"
+            path_str = _normalize_path_str(input("Insert the path to the file: "))
             file_path = Path(path_str)
 
         #Folder behavior logic
